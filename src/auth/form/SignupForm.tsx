@@ -12,8 +12,12 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { signupValidation } from "@/lib/validation";
+import Loader from "@/components/shared/Loader";
+import { Link } from "react-router-dom";
 
 const SignupForm = () => {
+   const isLoading = false; // Replace with actual loading state
+
    const form = useForm<z.infer<typeof signupValidation>>({
       resolver: zodResolver(signupValidation),
       defaultValues: {
@@ -109,9 +113,15 @@ const SignupForm = () => {
                   )}
                />
                <Button type="submit" className="shad-button_primary">
-                  Submit
+                  {isLoading ? <Loader /> : "Sign up"}
                </Button>
             </form>
+            <p className="text-center text-sm text-light-2 mt-4">
+               Already have an account?{" "}
+               <Link to="/sign-in" className="text-primary-500 hover:underline">
+                  Sign in
+               </Link>
+            </p>
          </div>
       </Form>
    );
