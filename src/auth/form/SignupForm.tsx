@@ -15,11 +15,17 @@ import { Input } from "@/components/ui/input";
 import { signupValidation } from "@/lib/validation";
 import Loader from "@/components/shared/Loader";
 import { Link } from "react-router-dom";
-import { createUserAccount } from "@/lib/appwrite/api";
+import {
+   useCreateUserAccount,
+   useSignInAccount,
+} from "@/lib/react-query/queryNmutation";
 
 const SignupForm = () => {
    const { toast } = useToast();
-   const isLoading = false; // Replace with actual loading state
+
+   const { mutateAsync: createUserAccount, isPending: createUserLoading } =
+      useCreateUserAccount();
+   const { mutateAsync: signInAccount } = useSignInAccount();
 
    const form = useForm<z.infer<typeof signupValidation>>({
       resolver: zodResolver(signupValidation),
@@ -41,6 +47,26 @@ const SignupForm = () => {
             variant: "destructive",
          });
       }
+
+      const session = await signInAccount({
+         email: values.email,
+         password: values.password,
+      });
+      if (!session) {
+         // Handle error
+         return toast({
+            title: "Error",
+            description: "Failed to sign in user",
+            variant: "destructive",
+         });
+      }
+      toast({
+         title: "Success",
+         description: "User account created and signed in successfully",
+         variant: "default",
+      });
+      // Redirect to home page or perform any other action
+      // window.location.href = "/";
    }
 
    return (
@@ -124,7 +150,7 @@ const SignupForm = () => {
                   )}
                />
                <Button type="submit" className="shad-button_primary">
-                  {isLoading ? <Loader /> : "Sign up"}
+                  {createUserLoading ? <Loader /> : "Sign up"}
                </Button>
             </form>
             <p className="text-center text-sm text-light-2 mt-4">

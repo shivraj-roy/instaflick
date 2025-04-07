@@ -49,3 +49,19 @@ export const saveUserToDB = async (user: {
       throw new Error("Failed to save user to database");
    }
 };
+
+export const signInAccount = async (user: {
+   email: string;
+   password: string;
+}) => {
+   try {
+      const session = await account.createEmailPasswordSession(
+         user.email,
+         user.password
+      );
+      return session;
+   } catch (error) {
+      console.error("Error signing in: ", error);
+      throw new Error("Failed to sign in");
+   }
+};
