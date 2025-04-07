@@ -10,6 +10,7 @@ import {
    FormLabel,
    FormMessage,
 } from "@/components/ui/form";
+import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { signupValidation } from "@/lib/validation";
 import Loader from "@/components/shared/Loader";
@@ -17,6 +18,7 @@ import { Link } from "react-router-dom";
 import { createUserAccount } from "@/lib/appwrite/api";
 
 const SignupForm = () => {
+   const { toast } = useToast();
    const isLoading = false; // Replace with actual loading state
 
    const form = useForm<z.infer<typeof signupValidation>>({
@@ -31,7 +33,14 @@ const SignupForm = () => {
 
    async function onSubmit(values: z.infer<typeof signupValidation>) {
       const newUser = await createUserAccount(values);
-      console.log(newUser);
+      if (!newUser) {
+         // Handle error
+         return toast({
+            title: "Error",
+            description: "Failed to create user account",
+            variant: "destructive",
+         });
+      }
    }
 
    return (
