@@ -14,14 +14,17 @@ import { useToast } from "@/hooks/use-toast";
 import { Input } from "@/components/ui/input";
 import { signupValidation } from "@/lib/validation";
 import Loader from "@/components/shared/Loader";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
    useCreateUserAccount,
    useSignInAccount,
 } from "@/lib/react-query/queryNmutation";
+import { useAuthContext } from "@/context/AuthContext";
 
 const SignupForm = () => {
    const { toast } = useToast();
+   const { checkAuthUser, isLoading: isAuthLoading } = useAuthContext();
+   const navigate = useNavigate();
 
    const { mutateAsync: createUserAccount, isPending: createUserLoading } =
       useCreateUserAccount();
@@ -60,13 +63,23 @@ const SignupForm = () => {
             variant: "destructive",
          });
       }
-      toast({
-         title: "Success",
-         description: "User account created and signed in successfully",
-         variant: "default",
-      });
-      // Redirect to home page or perform any other action
-      // window.location.href = "/";
+
+      const isAuth = await checkAuthUser();
+      if (isAuth) {
+         form.reset();
+         toast({
+            title: "Success",
+            description: "User account created and signed in successfully",
+            variant: "default",
+         });
+         navigate("/");
+      } else {
+         return toast({
+            title: "Error",
+            description: "Failed to authenticate user",
+            variant: "destructive",
+         });
+      }
    }
 
    return (
