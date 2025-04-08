@@ -2,6 +2,11 @@ import { ID, Query } from "appwrite";
 import { INewUser } from "@/types";
 import { account, appwriteConfig, avatars, databases } from "./config";
 
+/* -------------------------------------------------------------------------- */
+//*                               AUTHENTICATION                               *//
+/* -------------------------------------------------------------------------- */
+
+//* ----------------------------- FOR SIGNING UP ----------------------------- */
 export const createUserAccount = async (user: INewUser) => {
    try {
       const newAccount = await account.create(
@@ -29,6 +34,7 @@ export const createUserAccount = async (user: INewUser) => {
    }
 };
 
+//* -------------------------- FOR SAVING USER TO DB ------------------------- */
 export const saveUserToDB = async (user: {
    accountId: string;
    email: string;
@@ -50,6 +56,7 @@ export const saveUserToDB = async (user: {
    }
 };
 
+//* ----------------------------- FOR SIGNING IN ----------------------------- */
 export const signInAccount = async (user: {
    email: string;
    password: string;
@@ -91,6 +98,21 @@ export const signInAccount = async (user: {
    }
 };
 
+//* ----------------------------- FOR SIGNING OUT ---------------------------- */
+export const signOutAccount = async () => {
+   try {
+      const session = await account.deleteSession("current");
+      if (!session) {
+         throw new Error("Failed to delete session");
+      }
+      return session;
+   } catch (error) {
+      console.error("Error signing out: ", error);
+      throw new Error("Failed to sign out");
+   }
+};
+
+//* -------------------------- FOR GETTING USER DATA ------------------------- */
 export const getCurrentUser = async () => {
    try {
       const currentUser = await account.get();
