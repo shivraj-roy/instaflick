@@ -55,14 +55,39 @@ export const signInAccount = async (user: {
    password: string;
 }) => {
    try {
-      const session = await account.createEmailPasswordSession(
-         user.email,
-         user.password
-      );
-      return session;
-   } catch (error) {
-      console.error("Error signing in: ", error);
-      throw new Error("Failed to sign in");
+      // console.log("Checking for an existing session...");
+      const currentUser = await account.get(); // Check if a session is active
+      // console.log("User already signed in:", currentUser);
+      return currentUser; // Return the current session if it exists
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   } catch (error: any) {
+      if (error.code === 401) {
+         // No active session, proceed to create a new one
+         console.log("No active session found. Creating a new session...");
+         try {
+            const session = await account.createEmailPasswordSession(
+               user.email,
+               user.password
+            );
+            console.log("Session created successfully:", session);
+            return session;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         } catch (sessionError: any) {
+            console.error(
+               "Error during session creation:",
+               sessionError.message
+            );
+            throw new Error(
+               "Failed to sign in. Please check your credentials."
+            );
+         }
+      } else {
+         console.error(
+            "Unexpected error while checking session:",
+            error.message
+         );
+         throw new Error("Failed to check session status.");
+      }
    }
 };
 

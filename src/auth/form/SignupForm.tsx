@@ -163,7 +163,7 @@ const SignupForm = () => {
                   )}
                />
                <Button type="submit" className="shad-button_primary">
-                  {createUserLoading ? <Loader /> : "Sign up"}
+                  {createUserLoading || isAuthLoading ? <Loader /> : "Sign up"}
                </Button>
             </form>
             <p className="text-center text-sm text-light-2 mt-4">

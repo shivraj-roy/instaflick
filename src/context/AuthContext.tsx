@@ -15,7 +15,7 @@ export const INITIAL_USER = {
 const INITIAL_STATE = {
    user: INITIAL_USER,
    isAuthenticated: false,
-   isLoading: true,
+   isLoading: false,
    setUser: (() => {}) as React.Dispatch<React.SetStateAction<IUser>>,
    setIsAuthenticated: (() => {}) as React.Dispatch<
       React.SetStateAction<boolean>
