@@ -1,5 +1,15 @@
 import { Routes, Route } from "react-router-dom";
-import { Home } from "./root/pages";
+import {
+   AllUsers,
+   CreatePost,
+   EditPost,
+   Explore,
+   Home,
+   PostDetails,
+   Profile,
+   Saved,
+   UpdateProfile,
+} from "./root/pages";
 import SigninForm from "./auth/form/SigninForm";
 import SignupForm from "./auth/form/SignupForm";
 import AuthLayout from "./auth/AuthLayout";
@@ -19,6 +29,14 @@ function App() {
             {/* Private Routes */}
             <Route element={<RootLayout />}>
                <Route index element={<Home />} />
+               <Route path="/explore" element={<Explore />} />
+               <Route path="/saved" element={<Saved />} />
+               <Route path="/all-users" element={<AllUsers />} />
+               <Route path="/create-post" element={<CreatePost />} />
+               <Route path="/edit-post/:id" element={<EditPost />} />
+               <Route path="/post/:id" element={<PostDetails />} />
+               <Route path="/profile/:id/*" element={<Profile />} />
+               <Route path="/update-profile/:id" element={<UpdateProfile />} />
             </Route>
          </Routes>
 
