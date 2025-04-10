@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { Models } from "appwrite";
 import { Button } from "@/components/ui/button";
 import {
    Form,
@@ -14,47 +15,25 @@ import {
 import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import FileUploader from "../shared/FileUploader";
+import { postValidation } from "@/lib/validation";
 
-const formSchema = z.object({
-   caption: z.string().min(2, {
-      message: "Username must be at least 2 characters.",
-   }),
-   file: z
-      .any()
-      .refine((file) => file?.length > 0, {
-         message: "Please select a file.",
-      })
-      .refine((file) => file?.length <= 1, {
-         message: "Please select only one file.",
-      })
-      .refine((file) => file?.[0]?.size <= 5 * 1024 * 1024, {
-         message: "File size must be less than 5MB.",
-      }),
-   location: z.string().optional(),
-   tags: z
-      .string()
-      .optional()
-      .refine(
-         (tags) => {
-            const tagsArray = tags?.split(",").map((tag) => tag.trim());
-            return tagsArray?.every((tag) => tag.startsWith("#"));
-         },
-         {
-            message: "Tags must start with a #",
-         }
-      ),
-});
+type PostFormType = {
+   post?: Models.Document;
+};
 
-const PostForm = () => {
-   const form = useForm<z.infer<typeof formSchema>>({
-      resolver: zodResolver(formSchema),
+const PostForm = ({ post }: PostFormType) => {
+   const form = useForm<z.infer<typeof postValidation>>({
+      resolver: zodResolver(postValidation),
       defaultValues: {
-         caption: "",
+         caption: post?.caption || "",
+         file: post?.imageUrl ? [post?.imageUrl] : [],
+         location: post?.location || "",
+         tags: post?.tags.join(", ") || "",
       },
    });
 
    // 2. Define a submit handler.
-   function onSubmit(values: z.infer<typeof formSchema>) {
+   function onSubmit(values: z.infer<typeof postValidation>) {
       // Do something with the form values.
       // ✅ This will be type-safe and validated.
       console.log(values);
@@ -92,7 +71,10 @@ const PostForm = () => {
                         Add Photos
                      </FormLabel>
                      <FormControl>
-                        <FileUploader />
+                        <FileUploader
+                           fieldChange={field.onChange}
+                           mediaUrl={post?.imageUrl}
+                        />
                      </FormControl>
 
                      <FormMessage className="shad-form_message" />
