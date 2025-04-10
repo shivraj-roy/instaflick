@@ -1,6 +1,6 @@
 import { ID, Query } from "appwrite";
-import { INewUser } from "@/types";
-import { account, appwriteConfig, avatars, databases } from "./config";
+import { INewPost, INewUser } from "@/types";
+import { account, appwriteConfig, avatars, databases, storage } from "./config";
 
 /* -------------------------------------------------------------------------- */
 //*                               AUTHENTICATION                               *//
@@ -132,5 +132,86 @@ export const getCurrentUser = async () => {
    } catch (error) {
       console.error("Error getting current user: ", error);
       throw new Error("Failed to get current user");
+   }
+};
+
+//* --------------------------- FOR CREATING A POST -------------------------- */
+export const createPost = async (post: INewPost) => {
+   try {
+      const uploadedFile = await uploadFile(post.file[0]);
+      if (!uploadedFile) {
+         throw new Error("Failed to upload file");
+      }
+      const fileUrl = getFilePreview(uploadedFile.$id);
+      if (!fileUrl) {
+         deleteFile(uploadedFile.$id);
+         throw new Error("Failed to get file preview");
+      }
+      const tags = post.tags?.replace(/ /g, "").split(",") || [];
+      const newPost = await databases.createDocument(
+         appwriteConfig.databaseId,
+         appwriteConfig.postCollectionId,
+         ID.unique(),
+         {
+            creator: post.userId,
+            caption: post.caption,
+            imageId: uploadedFile.$id,
+            imageUrl: fileUrl,
+            location: post.location,
+            tags: tags,
+         }
+      );
+      if (!newPost) {
+         deleteFile(uploadedFile.$id);
+         throw new Error("Failed to create post");
+      }
+      return newPost;
+   } catch (error) {
+      console.error("Error creating post: ", error);
+      throw new Error("Failed to create post");
+   }
+};
+
+//* -------------------------- FOR UPLOADING A FILE -------------------------- */
+export const uploadFile = async (file: File) => {
+   try {
+      const uploadedFile = storage.createFile(
+         appwriteConfig.storageId,
+         ID.unique(),
+         file
+      );
+      return uploadedFile;
+   } catch (error) {
+      console.error("Error uploading file: ", error);
+      throw new Error("Failed to upload file");
+   }
+};
+
+//* -------------------------- FOR GETTING FILE PREVIEW --------------------- */
+export const getFilePreview = (fileId: string) => {
+   try {
+      const filePreview = storage.getFilePreview(
+         appwriteConfig.storageId,
+         fileId,
+         500,
+         500,
+         undefined,
+         100
+      );
+      return filePreview;
+   } catch (error) {
+      console.error("Error getting file preview: ", error);
+      throw new Error("Failed to get file preview");
+   }
+};
+
+//* -------------------------- FOR DELETING A FILE -------------------------- */
+export const deleteFile = async (fileId: string) => {
+   try {
+      await storage.deleteFile(appwriteConfig.storageId, fileId);
+      return { status: "success", message: "File deleted successfully" };
+   } catch (error) {
+      console.error("Error deleting file: ", error);
+      throw new Error("Failed to delete file");
    }
 };

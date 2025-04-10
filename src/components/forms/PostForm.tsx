@@ -2,6 +2,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { useNavigate } from "react-router-dom";
 import { Models } from "appwrite";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,12 +17,21 @@ import { Textarea } from "../ui/textarea";
 import { Input } from "../ui/input";
 import FileUploader from "../shared/FileUploader";
 import { postValidation } from "@/lib/validation";
+import { useCreatePost } from "@/lib/react-query/queryNmutation";
+import { useAuthContext } from "@/context/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 type PostFormType = {
    post?: Models.Document;
 };
 
 const PostForm = ({ post }: PostFormType) => {
+   const { user } = useAuthContext();
+   const { toast } = useToast();
+   const navigate = useNavigate();
+   const { mutateAsync: createPost, isPending: isLoadingPost } =
+      useCreatePost();
+
    const form = useForm<z.infer<typeof postValidation>>({
       resolver: zodResolver(postValidation),
       defaultValues: {
@@ -33,10 +43,28 @@ const PostForm = ({ post }: PostFormType) => {
    });
 
    // 2. Define a submit handler.
-   function onSubmit(values: z.infer<typeof postValidation>) {
-      // Do something with the form values.
-      // ✅ This will be type-safe and validated.
-      console.log(values);
+   async function onSubmit(values: z.infer<typeof postValidation>) {
+      const newPost = await createPost({
+         caption: values.caption || "",
+         file: values.file,
+         location: values.location,
+         tags: values.tags,
+         userId: user?.id,
+      });
+      if (!newPost) {
+         toast({
+            title: "Error",
+            description: "Post not created",
+            variant: "destructive",
+         });
+      }
+      navigate("/");
+      toast({
+         title: "Success",
+         description: "Post created successfully",
+         variant: "default",
+      });
+      form.reset();
    }
 
    return (
