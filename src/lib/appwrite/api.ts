@@ -215,3 +215,81 @@ export const deleteFile = async (fileId: string) => {
       throw new Error("Failed to delete file");
    }
 };
+
+//* -------------------------- FOR GETTING RESENT POSTS ------------------------- */
+export const getRecentPosts = async () => {
+   try {
+      const posts = await databases.listDocuments(
+         appwriteConfig.databaseId,
+         appwriteConfig.postCollectionId,
+         [Query.limit(20), Query.orderDesc("$createdAt")]
+      );
+      if (!posts) {
+         throw new Error("No posts found");
+      }
+      return posts;
+   } catch (error) {
+      console.error("Error getting recent posts: ", error);
+      throw new Error("Failed to get recent posts");
+   }
+};
+
+//* ------------------------------ FOR LIKE POST ----------------------------- */
+export const likePost = async (postId: string, likesArray: string[]) => {
+   try {
+      const updatedPost = await databases.updateDocument(
+         appwriteConfig.databaseId,
+         appwriteConfig.postCollectionId,
+         postId,
+         {
+            likes: likesArray,
+         }
+      );
+      if (!updatedPost) {
+         throw new Error("Failed to update post");
+      }
+      return updatedPost;
+   } catch (error) {
+      console.error("Error liking post: ", error);
+      throw new Error("Failed to like post");
+   }
+};
+
+//* ------------------------------ FOR SAVE POST ----------------------------- */
+export const savePost = async (postId: string, userId: string) => {
+   try {
+      const updatedPost = await databases.updateDocument(
+         appwriteConfig.databaseId,
+         appwriteConfig.postCollectionId,
+         postId,
+         {
+            savedBy: userId,
+         }
+      );
+      if (!updatedPost) {
+         throw new Error("Failed to update post");
+      }
+      return updatedPost;
+   } catch (error) {
+      console.error("Error saving post: ", error);
+      throw new Error("Failed to save post");
+   }
+};
+
+//* ------------------------------ FOR DELETE SAVE POST ----------------------------- */
+export const deleteSavedPost = async (savedRecordId: string) => {
+   try {
+      const statusCode = await databases.deleteDocument(
+         appwriteConfig.databaseId,
+         appwriteConfig.saveCollectionId,
+         savedRecordId
+      );
+      if (!statusCode) {
+         throw new Error("Failed to delete saved post");
+      }
+      return { status: "success", message: "Saved post deleted successfully" };
+   } catch (error) {
+      console.error("Error deleting saved post: ", error);
+      throw new Error("Failed to delete saved post");
+   }
+};
